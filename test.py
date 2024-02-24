@@ -1,31 +1,33 @@
-"""
-create search function
-Get desired information from websites,
-safe data to csv file,
-use data to show information and links to websites
-sort by price
-"""
-import csv
 import requests
 from bs4 import BeautifulSoup
+import time
+from selenium import webdriver
 
-# URL of the webpage to scrape
-url = 'https://airbnb.com'
+def main():
 
-# Send an HTTP request to the webpage
-response = requests.get(url)
 
-# Parse the HTML content
-soup = BeautifulSoup(response.text, 'html.parser')
+    #Creates headers that bypass the webscraper / bot blockers
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36'}
+    #Asks user for search criteria and replaces the space with +
+    search = input("Search: ")
+    #search.replace(" ", "+")
 
-# Extract all text from the webpage
-all_text = soup.get_text(separator='\n', strip=True)
+    URL = f"https://www.jmbullion.com/search/?q={search}"
+    page = requests.get(URL, headers=headers)
 
-# Write the extracted data into a CSV file
-csv_file = 'scraped_data.csv'
-with open(csv_file, 'w', newline='', encoding='utf-8') as file:
-    writer = csv.writer(file)
-    writer.writerow(['Text'])  # header
-    writer.writerow([all_text])
+    driver = webdriver.Chrome()
+    driver.get(URL)
+    time.sleep(3)
+    soup = BeautifulSoup(driver.page_source, "html.parser")
+    bullion = soup.find_all("div", class_="product type-product status-publish hentry mainproductIn cat-product first instock")
+    
+    with open('yourfile.html', 'w') as f:
+        f.write(str(bullion))
+    
+    for bull in bullion:
+        title = bull.find("span", class_="title")
+        price = bull.find("span", class_="price")
+        print(title)
+        print(price)
 
-print(f"Data has been scraped and saved to '{csv_file}'")
+main()
